@@ -6,10 +6,10 @@ Real-time analytics and monitoring dashboard platform.
 
 This repo now follows 4-layer Clean Architecture:
 
-1. `Domain` (`src/LiveMetricStack.Domain`)
-2. `Application` (`src/LiveMetricStack.Application`)
-3. `Infrastructure` (`src/LiveMetricStack.Infrastructure`)
-4. `WebApi` (`src/LiveMetricStack.WebApi`)
+1. `Domain` (`LiveMetricStack.Domain`)
+2. `Application` (`LiveMetricStack.Application`)
+3. `Infrastructure` (`LiveMetricStack.Infrastructure`)
+4. `WebApi` (`LiveMetricStack.WebApi`)
 
 Dependency direction:
 - `Application` -> `Domain`
@@ -51,8 +51,8 @@ Background worker:
 ## PostgreSQL Configuration
 
 Edit:
-- `src/LiveMetricStack.WebApi/appsettings.json`
-- `src/LiveMetricStack.WebApi/appsettings.Development.json`
+- `LiveMetricStack.WebApi/appsettings.json`
+- `LiveMetricStack.WebApi/appsettings.Development.json`
 
 Required keys:
 - `ConnectionStrings:PostgreSql`
@@ -75,7 +75,7 @@ dotnet build LiveMetricStack.sln
 
 3. Run API:
 ```bash
-dotnet run --project src/LiveMetricStack.WebApi
+dotnet run --project LiveMetricStack.WebApi
 ```
 
 Swagger (Development):
