@@ -1,0 +1,40 @@
+@LiveMetricStack_HostAddress = https://localhost:7188
+
+### Register
+POST {{LiveMetricStack_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Demo User",
+  "email": "demo@livemetricstack.dev",
+  "password": "DemoPass123!"
+}
+
+### Login
+POST {{LiveMetricStack_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "demo@livemetricstack.dev",
+  "password": "DemoPass123!"
+}
+
+### Applications (replace with token)
+GET {{LiveMetricStack_HostAddress}}/api/applications
+Authorization: Bearer {{token}}
+
+### Ingest metric (replace app id + token)
+POST {{LiveMetricStack_HostAddress}}/api/metrics
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "applicationId": "00000000-0000-0000-0000-000000000000",
+  "metricName": "cpu_usage",
+  "metricValue": 65.2,
+  "unit": "%"
+}
+
+### Query metrics
+GET {{LiveMetricStack_HostAddress}}/api/metrics?take=50
+Authorization: Bearer {{token}}
