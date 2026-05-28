@@ -38,3 +38,56 @@ Content-Type: application/json
 ### Query metrics
 GET {{LiveMetricStack_HostAddress}}/api/metrics?take=50
 Authorization: Bearer {{token}}
+
+### Dashboard summary
+GET {{LiveMetricStack_HostAddress}}/api/dashboard
+Authorization: Bearer {{token}}
+
+### Create event
+POST {{LiveMetricStack_HostAddress}}/api/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "applicationId": "00000000-0000-0000-0000-000000000000",
+  "eventType": "ManualNotice",
+  "message": "Deployed new build",
+  "severity": "Info"
+}
+
+### Query events
+GET {{LiveMetricStack_HostAddress}}/api/events?take=50
+Authorization: Bearer {{token}}
+
+### Create alert
+POST {{LiveMetricStack_HostAddress}}/api/alerts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "applicationId": "00000000-0000-0000-0000-000000000000",
+  "title": "Manual Alert",
+  "message": "Please investigate latency spike.",
+  "severity": "Warning"
+}
+
+### Query alerts
+GET {{LiveMetricStack_HostAddress}}/api/alerts?isResolved=false&take=50
+Authorization: Bearer {{token}}
+
+### Create health check
+POST {{LiveMetricStack_HostAddress}}/api/health-checks
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "applicationId": "00000000-0000-0000-0000-000000000000",
+  "endpoint": "https://example.com/health",
+  "statusCode": 200,
+  "responseTimeMs": 120,
+  "isHealthy": true
+}
+
+### Query health checks
+GET {{LiveMetricStack_HostAddress}}/api/health-checks?take=50
+Authorization: Bearer {{token}}
