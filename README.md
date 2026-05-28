@@ -54,6 +54,10 @@ Implemented schema entities:
 - `Alerts`
 - `ApiHealthChecks`
 
+## Database ER Diagram
+
+![LiveMetricStack ER Diagram](docs/images/er-diagram-for-metrics.png)
+
 Background worker:
 - `FakeMetricsWorker` writes demo CPU, memory, request count, and error rate metrics continuously.
 - Worker also broadcasts live metric batches to SignalR clients using event: `metrics:batch`.
