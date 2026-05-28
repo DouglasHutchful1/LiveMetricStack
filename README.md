@@ -21,7 +21,7 @@ Dependency direction:
 - ASP.NET Core Web API (`net9.0`)
 - EF Core + PostgreSQL (Npgsql)
 - JWT auth
-- SignalR (next phase)
+- SignalR
 - React + Tailwind (next phase)
 
 ## Current Backend Scope (Started)
@@ -36,6 +36,15 @@ Implemented endpoints:
 - `POST /api/metrics`
 - `GET /api/metrics`
 - `GET /api/metrics/{applicationId}/latest`
+- `GET /api/dashboard`
+- `POST /api/events`
+- `GET /api/events`
+- `POST /api/alerts`
+- `GET /api/alerts`
+- `PATCH /api/alerts/{id}/resolve`
+- `POST /api/health-checks`
+- `GET /api/health-checks`
+- `WS /hubs/metrics` (SignalR)
 
 Implemented schema entities:
 - `Users`
@@ -47,6 +56,21 @@ Implemented schema entities:
 
 Background worker:
 - `FakeMetricsWorker` writes demo CPU, memory, request count, and error rate metrics continuously.
+- Worker also broadcasts live metric batches to SignalR clients using event: `metrics:batch`.
+- Worker writes event records and triggers/resolves high-error alerts.
+- `HealthMonitorWorker` runs endpoint probes and stores `ApiHealthChecks`.
+- `MetricsRetentionWorker` prunes old metric records by retention policy.
+
+SignalR usage:
+- Clients should call `JoinApplication(applicationId)` after connect.
+- Clients receive app-scoped metric batches via `metrics:batch`.
+- Clients can call `LeaveApplication(applicationId)` when switching context.
+- Clients receive alert notifications via `alerts:new` and `alerts:resolved`.
+
+Caching:
+- Distributed cache is wired for metrics and dashboard queries.
+- Set `Cache:EnableRedis=true` and provide `ConnectionStrings:Redis` to use Redis.
+- If Redis is disabled/unavailable, API falls back to in-memory distributed cache.
 
 ## PostgreSQL Configuration
 
@@ -56,10 +80,15 @@ Edit:
 
 Required keys:
 - `ConnectionStrings:PostgreSql`
+- `ConnectionStrings:Redis`
 - `Jwt:Issuer`
 - `Jwt:Audience`
 - `Jwt:Key` (minimum 32 characters)
 - `Jwt:ExpirationMinutes`
+- `MetricsGenerator:*`
+- `MetricsRetention:*`
+- `HealthMonitor:*`
+- `Cache:*`
 
 ## Run
 
@@ -83,7 +112,6 @@ Swagger (Development):
 
 ## Next Build Steps
 
-1. Add `/hubs/metrics` SignalR broadcast.
-2. Stream worker-generated metrics to realtime clients.
-3. Add events/alerts/health-check modules.
-4. Start React dashboard phase.
+1. Add Docker Compose for PostgreSQL + Redis local stack.
+2. Build React dashboard with SignalR subscription.
+3. Add auth/role UX (admin operations, alert workflows).
