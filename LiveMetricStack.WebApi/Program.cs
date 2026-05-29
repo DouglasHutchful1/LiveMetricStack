@@ -13,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
                      ?? ["http://localhost:5173", "http://localhost:5174"];
 var applyMigrationsOnStartup = builder.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
+var enableSwaggerInProduction = builder.Configuration.GetValue<bool>("Swagger:EnabledInProduction");
 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
@@ -64,7 +65,7 @@ builder.Services.AddSingleton<IAlertsRealtimePublisher, SignalRAlertsRealtimePub
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || enableSwaggerInProduction)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
