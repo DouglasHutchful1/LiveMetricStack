@@ -116,6 +116,7 @@ Notes:
 - `Jwt__Key=<long random secret>`
 - `Database__ApplyMigrationsOnStartup=true` (first deploy only, then set `false`)
 - `Cors__AllowedOrigins__0=https://your-host-url`
+- `Swagger__EnabledInProduction=true` (enable Swagger UI on production at `/swagger`)
 
 Generate a JWT key:
 ```bash
@@ -140,13 +141,14 @@ dotnet run --project LiveMetricStack.WebApi
 ```
 
 Swagger (Development):
-- `https://localhost:7298/swagger`
+- `https://livemetricstack.onrender.com/swagger`
 
 Health endpoint:
 - `/health`
 
 ## Next Build Steps
 
+1. Add Docker Compose for PostgreSQL + Redis local stack.
 2. Add integration tests for auth, metrics ingestion, and realtime broadcasts.
 3. Replace fake metrics with external app ingestion for production-like telemetry.
 4. Add richer alert lifecycle (acknowledge/snooze/escalation).
