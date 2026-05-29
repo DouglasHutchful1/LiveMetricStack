@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 
 namespace LiveMetricStack.Infrastructure.DependencyInjection;
 
@@ -60,8 +61,9 @@ public static class DependencyInjection
         services.AddHostedService<MetricsRetentionWorker>();
         services.AddHostedService<HealthMonitorWorker>();
 
-        var connectionString = configuration.GetConnectionString("PostgreSql")
-                               ?? throw new InvalidOperationException("Connection string 'PostgreSql' is missing.");
+        var connectionStringRaw = configuration.GetConnectionString("PostgreSql")
+                                  ?? throw new InvalidOperationException("Connection string 'PostgreSql' is missing.");
+        var connectionString = NormalizePostgresConnectionString(connectionStringRaw);
 
         services.AddDbContext<LiveMetricDbContext>(options =>
         {
@@ -110,5 +112,49 @@ public static class DependencyInjection
         services.AddAuthorization();
 
         return services;
+    }
+
+    private static string NormalizePostgresConnectionString(string value)
+    {
+        var raw = value.Trim().Trim('"');
+        if (!raw.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) &&
+            !raw.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+        {
+            return raw;
+        }
+
+        var uri = new Uri(raw);
+        var userInfoParts = uri.UserInfo.Split(':', 2, StringSplitOptions.None);
+        var username = userInfoParts.Length > 0 ? Uri.UnescapeDataString(userInfoParts[0]) : string.Empty;
+        var password = userInfoParts.Length > 1 ? Uri.UnescapeDataString(userInfoParts[1]) : string.Empty;
+        var database = uri.AbsolutePath.Trim('/');
+
+        var builder = new NpgsqlConnectionStringBuilder
+        {
+            Host = uri.Host,
+            Port = uri.IsDefaultPort ? 5432 : uri.Port,
+            Username = username,
+            Password = password,
+            Database = database
+        };
+
+        if (!string.IsNullOrWhiteSpace(uri.Query))
+        {
+            var pairs = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var pair in pairs)
+            {
+                var kv = pair.Split('=', 2, StringSplitOptions.None);
+                if (kv.Length != 2)
+                {
+                    continue;
+                }
+
+                var key = Uri.UnescapeDataString(kv[0]);
+                var val = Uri.UnescapeDataString(kv[1]);
+                builder[key] = val;
+            }
+        }
+
+        return builder.ConnectionString;
     }
 }
