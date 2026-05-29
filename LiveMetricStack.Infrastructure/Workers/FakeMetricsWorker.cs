@@ -42,7 +42,7 @@ public class FakeMetricsWorker(
                     var demoApp = new ApplicationEntity
                     {
                         Id = Guid.NewGuid(),
-                        Name = "Demo API",
+                        Name = "Live Metrics API",
                         Environment = "Production",
                         ApiKey = $"lms_{Guid.NewGuid():N}",
                         Status = "Online",
