@@ -1,6 +1,14 @@
 # LiveMetricStack
 
-Real-time analytics and monitoring dashboard platform.
+LiveMetricStack is a real-time business monitoring platform built with ASP.NET Core, SignalR, and PostgreSQL.  
+It ingests metrics/events, stores them, runs background analysis (alerts + health checks), and streams live updates to clients over WebSockets.  
+The backend is deployed on Render and integrated with a Vercel-hosted frontend.
+
+
+## Live Deployments
+
+- Backend API (Render): `https://livemetricstack.onrender.com`
+- Frontend (Vercel): `https://live-metric-monitor-frontend.vercel.app`
 
 ## Architecture
 
@@ -22,9 +30,10 @@ Dependency direction:
 - EF Core + PostgreSQL (Npgsql)
 - JWT auth
 - SignalR
-- React + Tailwind (next phase)
+- Redis (optional distributed cache)
+- React + Tailwind (separate frontend repo/app)
 
-## Current Backend Scope (Started)
+## Current Backend Scope
 
 Implemented endpoints:
 - `POST /api/auth/register`
@@ -58,7 +67,7 @@ Implemented schema entities:
 
 ![LiveMetricStack ER Diagram](docs/images/er-diagram-for-metrics.png)
 
-Background worker:
+Background workers:
 - `FakeMetricsWorker` writes demo CPU, memory, request count, and error rate metrics continuously.
 - Worker also broadcasts live metric batches to SignalR clients using event: `metrics:batch`.
 - Worker writes event records and triggers/resolves high-error alerts.
@@ -76,7 +85,7 @@ Caching:
 - Set `Cache:EnableRedis=true` and provide `ConnectionStrings:Redis` to use Redis.
 - If Redis is disabled/unavailable, API falls back to in-memory distributed cache.
 
-## PostgreSQL Configuration
+## Configuration
 
 Edit:
 - `LiveMetricStack.WebApi/appsettings.json`
@@ -93,6 +102,25 @@ Required keys:
 - `MetricsRetention:*`
 - `HealthMonitor:*`
 - `Cache:*`
+
+Notes:
+- `Jwt:Key` must be at least 32 characters.
+- API accepts both standard Npgsql connection strings and URL-style Postgres strings (`postgres://...`, `postgresql://...`), which works with Render database URLs.
+- CORS allowed origins are configured under `Cors:AllowedOrigins`.
+
+### Render Environment Variables (Production)
+
+- `ConnectionStrings__PostgreSql=<Render Internal Database URL>`
+- `Jwt__Issuer=LiveMetricStack`
+- `Jwt__Audience=LiveMetricStack.Client`
+- `Jwt__Key=<long random secret>`
+- `Database__ApplyMigrationsOnStartup=true` (first deploy only, then set `false`)
+- `Cors__AllowedOrigins__0=https://your-host-url`
+
+Generate a JWT key:
+```bash
+openssl rand -hex 32
+```
 
 ## Run
 
@@ -114,8 +142,11 @@ dotnet run --project LiveMetricStack.WebApi
 Swagger (Development):
 - `https://localhost:7298/swagger`
 
+Health endpoint:
+- `/health`
+
 ## Next Build Steps
 
-1. Add Docker Compose for PostgreSQL + Redis local stack.
-2. Build React dashboard with SignalR subscription.
-3. Add auth/role UX (admin operations, alert workflows).
+2. Add integration tests for auth, metrics ingestion, and realtime broadcasts.
+3. Replace fake metrics with external app ingestion for production-like telemetry.
+4. Add richer alert lifecycle (acknowledge/snooze/escalation).
